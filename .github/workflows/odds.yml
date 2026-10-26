@@ -1,0 +1,43 @@
+name: Odds Lens agent
+
+on:
+  schedule:
+    - cron: "0 7,17 * * *"   # 2 veces al día (hora UTC)
+  workflow_dispatch:          # permite ejecutarlo a mano con un botón
+
+permissions:
+  contents: write
+
+concurrency:
+  group: odds-agent
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ejecutar el agente
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT }}
+          SPORTS: ${{ vars.SPORTS || 'SOCCER,NBA' }}
+          REGIONS: ${{ vars.REGIONS || 'eu' }}
+          LANG_UI: ${{ vars.LANG_UI || 'es' }}
+          DB_PATH: data/signals.db
+          EXPORT_PATH: data/signals.json
+        run: |
+          mkdir -p data
+          python odds_agent.py run
+
+      - name: Guardar los datos
+        run: |
+          git config user.name "odds-bot"
+          git config user.email "odds-bot@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || (git commit -m "Actualizar señales" && git push)
