@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Odds Lens – prototipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F4F1;--sf:#fff;--ink:#17212B;--mut:#5C6873;--ln:#D5DAD3;--pos:#0B6E8F;--posbg:#DDEEF4;--neg:#A94A33;--imp:#B9C2BB;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171D;--sf:#18222B;--ink:#E7ECEF;--mut:#93A1AC;--ln:#2A3844;--pos:#5CC0E0;--posbg:#173545;--neg:#E58A72;--imp:#3C4B57;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10171D;--sf:#18222B;--ink:#E7ECEF;--mut:#93A1AC;--ln:#2A3844;--pos:#5CC0E0;--posbg:#173545;--neg:#E58A72;--imp:#3C4B57;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Schibsted Grotesk",system-ui,sans-serif}
+.w{max-width:880px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:22px;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:2px 0 0;font-size:14px}
+button,select{font:inherit;color:inherit}
+.lang{border:1px solid var(--ln);background:var(--sf);border-radius:6px;padding:6px 12px;cursor:pointer}
+.demo{margin:16px 0;padding:10px 14px;border-left:3px solid var(--neg);background:var(--sf);font-size:14px}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--ln);margin-bottom:20px}
+nav button{background:none;border:0;padding:10px 14px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button[aria-selected=true]{color:var(--ink);border-color:var(--pos);font-weight:500}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--pos);outline-offset:2px}
+.ctl{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px}
+.ctl label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--mut)}
+.ctl output{color:var(--ink);font-weight:700}
+.sig{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;margin-bottom:10px}
+.sig.off{opacity:.55}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ev{font-weight:500}.lg{color:var(--mut);font-size:13px}
+.edge{font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.bars{margin:10px 0 4px;display:grid;gap:5px}
+.bar{display:grid;grid-template-columns:92px 1fr 52px;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.trk{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.trk i{display:block;height:100%}
+.bar b{color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.meta{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.meta span b{color:var(--ink);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:10px 14px}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums}.stat span{font-size:13px;color:var(--mut)}
+.tw{overflow-x:auto;background:var(--sf);border:1px solid var(--ln);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px;min-width:520px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--ln)}
+th{font-weight:500;color:var(--mut);font-size:13px}tr:last-child td{border:0}
+select{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:7px 10px}
+input[type=range]{width:220px;accent-color:var(--pos)}
+.msg{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;white-space:pre-line;font-size:14px;max-width:460px}
+h2{font-size:16px;margin:22px 0 8px}
+footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--ln);font-size:13px;color:var(--mut)}
+@media (max-width:480px){.bar{grid-template-columns:78px 1fr 48px}input[type=range]{width:100%}}
+</style>
+</head>
+<body>
+<div class="w">
+<header>
+  <div><h1>Odds Lens</h1><p class="sub" data-t="tag"></p></div>
+  <button class="lang" id="lang" aria-label="Language">EN</button>
+</header>
+<div class="demo" data-t="demo"></div>
+<nav role="tablist">
+  <button role="tab" data-tab="s" data-t="t1"></button>
+  <button role="tab" data-tab="h" data-t="t2"></button>
+  <button role="tab" data-tab="a" data-t="t3"></button>
+</nav>
+
+<section id="s">
+  <div class="ctl">
+    <label><span><span data-t="minedge"></span>: <output id="thv">5%</output></span><input type="range" id="th" min="0" max="8" step="0.5" value="5"></label>
+    <label><span data-t="market"></span><select id="mk"><option>1X2</option></select></label>
+    <button class="lang" id="imp" data-t="imp"></button><input type="file" id="fi" accept=".json,application/json" hidden><span class="lg" id="st"></span>
+  </div>
+  <div id="list"></div>
+</section>
+
+<section id="h" hidden>
+  <div class="stats" id="stats"></div>
+  <div class="tw"><table><thead><tr><th data-t="c1"></th><th data-t="c2"></th><th data-t="c3"></th><th data-t="c4"></th><th data-t="c5"></th><th data-t="c6"></th></tr></thead><tbody id="rows"></tbody></table></div>
+  <p class="lg" data-t="clvnote"></p>
+</section>
+
+<section id="a" hidden>
+  <div class="ctl">
+    <label><span data-t="chan"></span><select id="ch"><option>Telegram</option><option>Email</option><option data-t="none"></option></select></label>
+    <label><span data-t="freq"></span><select id="fq"><option data-t="f1"></option><option data-t="f2"></option><option data-t="f3"></option></select></label>
+  </div>
+  <h2 data-t="prev"></h2>
+  <div class="msg" id="msg"></div>
+  <p class="lg" data-t="prevnote"></p>
+</section>
+
+<footer data-t="foot"></footer>
+</div>
+<script>
+const T={es:{imp:"Importar signals.json",live:"Datos reales · actualizado",sample:"Datos de ejemplo hasta que importes tu archivo",empty:"Sin señales abiertas por ahora.",bad:"Archivo no válido",tag:"Probabilidades del modelo frente a cuotas del mercado",demo:"Prototipo con datos de ejemplo. Los equipos, cuotas y resultados son inventados y no representan partidos reales.",t1:"Señales",t2:"Historial",t3:"Alertas",minedge:"Ventaja mínima",market:"Mercado",model:"Modelo",implied:"Cuota",edge:"ventaja",odds:"Cuota",fair:"Cuota justa",below:"Bajo el umbral",none:"Sin avisos",c1:"Evento",c2:"Selección",c3:"Cuota",c4:"Cierre",c5:"CLV",c6:"Resultado",s1:"Señales",s2:"Acierto",s3:"CLV medio",s4:"Resultado (1 u/señal)",clvnote:"CLV: diferencia entre la cuota al emitir la señal y la cuota de cierre. Si es positivo de forma sostenida, es la mejor evidencia de que el modelo aporta algo. Historial simulado, con aciertos y fallos.",chan:"Canal",freq:"Frecuencia",f1:"En cuanto haya una",f2:"Resumen diario",f3:"Resumen semanal",prev:"Vista previa de un aviso",prevnote:"El aviso informa datos y probabilidades. No indica dónde ni cuánto apostar.",home:"Local",draw:"Empate",away:"Visitante",W:"Acertó",L:"Falló",tpl:(e,s,p,o,d,ed)=>`Nueva señal de análisis\n${e}\nSelección: ${s}\nProbabilidad del modelo: ${p}%\nCuota del mercado: ${o} (implica ${d}%)\nVentaja estimada: +${ed}%\nEs información, no una recomendación. Ninguna probabilidad es garantía.`,foot:"Solo mayores de 18 años. Esta herramienta ofrece análisis e información, no garantiza resultados ni es asesoría de apuestas. El juego puede causar adicción: juega con responsabilidad. Las normas varían según el país."},
+en:{imp:"Import signals.json",live:"Live data · updated",sample:"Sample data until you import your file",empty:"No open signals right now.",bad:"Invalid file",tag:"Model probabilities versus market odds",demo:"Prototype with sample data. Teams, odds and results are made up and do not represent real matches.",t1:"Signals",t2:"History",t3:"Alerts",minedge:"Minimum edge",market:"Market",model:"Model",implied:"Odds",edge:"edge",odds:"Odds",fair:"Fair odds",below:"Below threshold",none:"No alerts",c1:"Event",c2:"Selection",c3:"Odds",c4:"Closing",c5:"CLV",c6:"Result",s1:"Signals",s2:"Hit rate",s3:"Avg. CLV",s4:"Result (1 u/signal)",clvnote:"CLV: the difference between the odds when the signal was issued and the closing odds. A sustained positive value is the best evidence the model adds something. Simulated history, wins and losses included.",chan:"Channel",freq:"Frequency",f1:"As soon as one appears",f2:"Daily digest",f3:"Weekly digest",prev:"Alert preview",prevnote:"The alert reports data and probabilities. It doesn’t say where or how much to bet.",home:"Home",draw:"Draw",away:"Away",W:"Won",L:"Lost",tpl:(e,s,p,o,d,ed)=>`New analysis signal\n${e}\nSelection: ${s}\nModel probability: ${p}%\nMarket odds: ${o} (implies ${d}%)\nEstimated edge: +${ed}%\nThis is information, not a recommendation. No probability is a guarantee.`,foot:"18+ only. This tool provides analysis and information. It doesn’t guarantee results and isn’t betting advice. Gambling can be addictive: play responsibly. Rules vary by country."}};
+const M=[
+["Atlas","Norte",[.55,.25,.20],[2.05,3.5,4.0],"Liga Alfa"],
+["Sur","Costa",[.38,.30,.32],[2.6,3.2,2.9],"Liga Alfa"],
+["Lions","Rovers",[.48,.27,.25],[2.3,3.3,3.4],"League Beta"],
+["Unión","Deportivo",[.30,.28,.42],[3.0,3.1,2.55],"Liga Gamma"],
+["City Blue","Red Stars",[.62,.21,.17],[1.55,4.2,6.0],"League Beta"],
+["Olimpia","Racing",[.33,.30,.37],[3.6,3.1,2.3],"Liga Gamma"],
+["Verde","Blanco",[.44,.30,.26],[2.6,3.1,3.2],"Liga Alfa"],
+["Tigres","Águilas",[.25,.27,.48],[3.8,3.3,2.3],"Liga Gamma"]];
+const H=[["Atlas–Norte",0,2.10,2.00,1],["Lions–Rovers",0,2.35,2.30,0],["Tigres–Águilas",2,2.40,2.25,1],["Olimpia–Racing",0,3.50,3.30,0],["Verde–Blanco",0,2.65,2.60,1],["Sur–Costa",2,3.00,2.80,0],["Unión–Deportivo",2,2.60,2.55,1],["Atlas–Verde",0,2.20,2.10,1],["Lions–Norte",0,2.45,2.50,0],["Racing–Costa",2,2.30,2.20,1],["Tigres–Sur",2,2.55,2.40,0],["Blanco–Olimpia",0,2.15,2.05,1]];
+let L=(navigator.language||"es").slice(0,2)==="en"?"en":"es";
+try{const s=localStorage.getItem("ol-lang");if(s==="en"||s==="es")L=s}catch(e){}
+let LIVE=null,UPD="",GEN="";
+const $=s=>document.querySelector(s),t=k=>T[L][k];
+const pc=x=>(x*100).toFixed(1);
+function sel(i){return typeof i==="string"?i:[t("home"),t("draw"),t("away")][i]}
+function sigs(){const o=[];
+ if(LIVE){const now=new Date().toISOString();LIVE.filter(r=>!r.result&&r.commence>now).forEach(r=>o.push({m:[r.home,r.away,0,0,r.league],i:r.selection,p:r.fair_p,od:r.odds,imp:1/r.odds,e:r.edge,book:r.book}));return o.sort((a,b)=>b.e-a.e)}
+ M.forEach(m=>m[2].forEach((p,i)=>{const od=m[3][i],imp=1/od;o.push({m,i,p,od,imp,e:p-imp})}));
+ return o.sort((a,b)=>b.e-a.e)}
+function renderSig(){const th=+$("#th").value/100;$("#thv").textContent=pc(th)+"%";
+ const all=sigs().filter(s=>s.e>0);
+ $("#list").innerHTML=!all.length?`<p class="lg">${t("empty")}</p>`:all.map(s=>{const on=s.e>=th;
+ return `<div class="sig ${on?"":"off"}"><div class="top"><div><div class="ev">${s.m[0]} – ${s.m[1]}</div><div class="lg">${s.m[4]} · ${sel(s.i)}</div></div><div class="edge ${on?"pos":""}">+${pc(s.e)}% ${t("edge")}</div></div>
+ <div class="bars"><div class="bar"><span>${t("model")}</span><div class="trk"><i style="width:${s.p*100}%;background:var(--pos)"></i></div><b>${pc(s.p)}%</b></div>
+ <div class="bar"><span>${t("implied")} ${s.od.toFixed(2)}</span><div class="trk"><i style="width:${s.imp*100}%;background:var(--imp)"></i></div><b>${pc(s.imp)}%</b></div></div>
+ <div class="meta"><span>${t("fair")}: <b>${(1/s.p).toFixed(2)}</b></span>${s.book?`<span>${s.book}</span>`:""}${on?"":`<span>${t("below")}</span>`}</div></div>`}).join("");
+ renderMsg()}
+function hist(){return LIVE?LIVE.filter(r=>r.result==="W"||r.result==="L").map(r=>[`${r.home}–${r.away}`,r.selection,r.odds,r.close_p?1/r.close_p:r.odds,r.result==="W"?1:0]):H}
+function renderHist(){const HH=hist();let w=0,clv=0,u=0;
+ if(!HH.length){$("#rows").innerHTML="";$("#stats").innerHTML=`<p class="lg">${t("empty")}</p>`;return}
+ const r=HH.map(h=>{const c=h[2]/h[3]-1;clv+=c;w+=h[4];u+=h[4]?h[2]-1:-1;
+  return `<tr><td>${h[0]}</td><td>${sel(h[1])}</td><td>${h[2].toFixed(2)}</td><td>${h[3].toFixed(2)}</td><td class="${c>=0?"pos":"neg"}">${c>=0?"+":""}${pc(c)}%</td><td class="${h[4]?"pos":"neg"}">${t(h[4]?"W":"L")}</td></tr>`}).join("");
+ $("#rows").innerHTML=r;
+ $("#stats").innerHTML=[[HH.length,"s1"],[Math.round(w/HH.length*100)+"%","s2"],[(clv>=0?"+":"")+pc(clv/HH.length)+"%","s3"],[(u>=0?"+":"")+u.toFixed(1)+" u","s4"]].map(x=>`<div class="stat"><b>${x[0]}</b><span>${t(x[1])}</span></div>`).join("")}
+function renderMsg(){const s=sigs()[0];if(!s){$("#msg").textContent=t("empty");return}$("#msg").textContent=t("tpl")(`${s.m[0]} – ${s.m[1]}`,sel(s.i),pc(s.p),s.od.toFixed(2),pc(s.imp),pc(s.e))}
+function apply(){document.documentElement.lang=L;document.querySelectorAll("[data-t]").forEach(e=>e.textContent=t(e.dataset.t));
+ $("#st").textContent=LIVE?t("live")+" "+UPD:t("sample");$(".demo").hidden=!!LIVE;
+ $("#lang").textContent=L==="es"?"EN":"ES";document.title="Odds Lens – "+(L==="es"?"prototipo":"prototype");renderSig();renderHist()}
+$("#lang").onclick=()=>{L=L==="es"?"en":"es";try{localStorage.setItem("ol-lang",L)}catch(e){}apply()};
+$("#th").oninput=renderSig;
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x===b));
+ ["s","h","a"].forEach(id=>$("#"+id).hidden=id!==b.dataset.tab)});
+document.querySelector("nav button").setAttribute("aria-selected","true");
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function setLive(o,save){if(!o||!Array.isArray(o.rows))throw 0;
+ LIVE=o.rows.slice(0,400).map(r=>({home:esc(r.home),away:esc(r.away),league:esc(r.league),selection:esc(r.selection),book:esc(r.book),commence:String(r.commence||""),odds:+r.odds||0,fair_p:+r.fair_p||0,edge:+r.edge||0,close_p:+r.close_p||0,result:r.result==="W"||r.result==="L"?r.result:(r.result?"V":null)})).filter(r=>r.odds>1);
+ GEN=String(o.generated||"");UPD=GEN.slice(0,16).replace("T"," ");apply();
+ if(save){try{localStorage.setItem("ol-data",JSON.stringify(o))}catch(e){}saveDb(o)}}
+async function saveDb(o){try{const db=await claude.use("db");if(db)await db.doc("signals/latest").set({generated:GEN,rows:o.rows.slice(0,400)})}catch(e){}}
+$("#imp").onclick=()=>$("#fi").click();
+$("#fi").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;f.text().then(x=>setLive(JSON.parse(x),true)).catch(()=>{$("#st").textContent=t("bad")})};
+try{const s=localStorage.getItem("ol-data");if(s)setLive(JSON.parse(s),false)}catch(e){}
+(async()=>{try{const db=await claude.use("db");if(!db)return;const d=await db.doc("signals/latest").get();if(d.exists){const x=d.data();if(String(x.generated||"")>GEN)setLive(x,false)}}catch(e){}})();
+// When hosted on GitHub Pages, load the agent's data automatically (always the freshest file in the repo).
+(()=>{let u="data/signals.json";const h=location.hostname;
+ if(h.endsWith(".github.io")){const r=location.pathname.split("/")[1];if(r)u=`https://raw.githubusercontent.com/${h.split(".")[0]}/${r}/main/data/signals.json`}
+ fetch(u+"?t="+Date.now()).then(r=>r.ok?r.json():Promise.reject()).then(o=>{if(String(o.generated||"")>GEN)setLive(o,false)}).catch(()=>{})})();
+apply();
+</script>
+</body>
+</html>
